@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Doc, Id } from '../../convex/_generated/dataModel'
+import { Doc, Id } from '../../../../convex/_generated/dataModel'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { TrashIcon, MoreVertical, ImageIcon, FileTextIcon, GanttChartIcon } from 'lucide-react'
+import { TrashIcon, MoreVertical, ImageIcon, FileTextIcon, GanttChartIcon, StarIcon } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { ReactNode, useState } from 'react'
-import { api } from '../../convex/_generated/api'
+import { api } from '../../../../convex/_generated/api'
 import { useMutation } from 'convex/react'
 import { useToast } from '@/components/ui/use-toast'
 import Image from 'next/image'
@@ -30,6 +30,7 @@ import Image from 'next/image'
 function FileCardActions({ file }: { file: Doc<'files'> }) {
   const { toast } = useToast()
   const deleteFile = useMutation(api.files.deleteFile)
+  const toggleFavorite = useMutation(api.files.toggleFavorite)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   return (
     <>
@@ -69,6 +70,17 @@ function FileCardActions({ file }: { file: Doc<'files'> }) {
           <MoreVertical />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
+          <DropdownMenuItem
+            className="flex gap-1 items-center cursor-pointer"
+            onClick={() => {
+              toggleFavorite({
+                fileId: file._id
+              })
+            }}
+          >
+            <StarIcon className="w-4 h-4" /> Favorite
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             className="flex gap-1 text-red-600 items-center cursor-pointer"
             onClick={() => setIsConfirmOpen(true)}
