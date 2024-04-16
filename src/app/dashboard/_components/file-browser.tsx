@@ -3,6 +3,7 @@
 import { useOrganization, useUser } from '@clerk/nextjs'
 import { useQuery } from 'convex/react'
 import { api } from '../../../../convex/_generated/api'
+import { Doc } from '../../../../convex/_generated/dataModel'
 import { UploadButton } from './upload-button'
 import { FileCard } from './file-card'
 import Image from 'next/image'
@@ -11,8 +12,9 @@ import { SearchBar } from './search-bar'
 import { useState } from 'react'
 import { DataTable } from './file-table'
 import { columns } from './columns'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 
 function Placeholder() {
   return (
@@ -36,21 +38,24 @@ export function FileBrowser({
   const organization = useOrganization()
   const user = useUser()
   const [query, setQuery] = useState('')
+  const [type, setType] = useState<Doc<'files'>['type'] | 'all'>('all')
   let orgId: string | undefined = undefined
   if (organization.isLoaded && user.isLoaded) {
     orgId = organization.organization?.id ?? user.user?.id
   }
   const favorites = useQuery(api.files.getAllFavorites, orgId ? { orgId } : 'skip')
-  const files = useQuery(api.files.getFiles, orgId ? { orgId, query, favorites: favoritesOnly, deletedOnly } : 'skip')
+  const files = useQuery(
+    api.files.getFiles,
+    orgId ? { orgId, type: type === 'all' ? undefined : type, query, favorites: favoritesOnly, deletedOnly } : 'skip'
+  )
 
   const isLoading = files === undefined
 
-  const modifiedFiles = files?.map(file => ({
-    ...file,
-    isFavorited: (favorites ?? []).some(
-      (favorite) => favorite.fileId === file._id
-    )
-  })) ?? [];
+  const modifiedFiles =
+    files?.map((file) => ({
+      ...file,
+      isFavorited: (favorites ?? []).some((favorite) => favorite.fileId === file._id),
+    })) ?? []
 
   return (
     <div>
@@ -61,16 +66,32 @@ export function FileBrowser({
       </div>
 
       <Tabs defaultValue="grid">
-        <TabsList className="mb-4">
-          <TabsTrigger value="grid" className="flex gap-2 items-center">
-            <GridIcon />
-            Grid
-          </TabsTrigger>
-          <TabsTrigger value="table">
-            <RowsIcon />
-            Table
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex justify-between items-center">
+          <TabsList className="mb-4">
+            <TabsTrigger value="grid" className="flex gap-2 items-center">
+              <GridIcon />
+              Grid
+            </TabsTrigger>
+            <TabsTrigger value="table">
+              <RowsIcon />
+              Table
+            </TabsTrigger>
+          </TabsList>
+          <div className="flex gap-2 items-center">
+            <Label htmlFor="type-select">Type Filter</Label>
+            <Select value={type} onValueChange={(newType) => {
+              setType(newType as any)
+            }}>
+              <SelectTrigger id="type-select" className="w-[180px]" defaultValue={'all'}></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="image">Image</SelectItem>
+                <SelectItem value="csv">CSV</SelectItem>
+                <SelectItem value="pdf">PDF</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         {isLoading && (
           <div className="flex flex-col items-center justify-center gap-8 w-full mt-16">
             <Loader2 className="h-32 w-32 animate-spin text-gray-500" />

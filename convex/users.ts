@@ -98,3 +98,19 @@ export const getUserProfile = query({
     }
   }
 })
+
+export const getMe = query({
+  args: {},
+  async handler(ctx, args) {
+    const identify = await ctx.auth.getUserIdentity();
+
+    if(!identify) {
+      return null
+    }
+    const user = await getUser(ctx, identify.tokenIdentifier)
+    if(!user) {
+      return null
+    }
+    return user
+  }
+})

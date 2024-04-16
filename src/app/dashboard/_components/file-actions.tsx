@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useState } from 'react'
 import { api } from '../../../../convex/_generated/api'
-import { useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { useToast } from '@/components/ui/use-toast'
 import { Protect } from "@clerk/nextjs";
 
@@ -28,6 +28,7 @@ export function FileCardActions({ file, isFavorite }: { file: Doc<'files'>; isFa
   const deleteFile = useMutation(api.files.deleteFile)
   const restoreFile = useMutation(api.files.restoreFile)
   const toggleFavorite = useMutation(api.files.toggleFavorite)
+  const me = useQuery(api.files.getMe)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   return (
     <>
@@ -96,7 +97,11 @@ export function FileCardActions({ file, isFavorite }: { file: Doc<'files'>; isFa
           </DropdownMenuItem>
 
           <Protect
-            role="org:admin"
+            condition={(check) => {
+              return check({
+                role: "org:admin"
+              }) || file.userId === me?._id
+            }}
             fallback={<></>}
           >
             <DropdownMenuSeparator />
