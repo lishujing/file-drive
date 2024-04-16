@@ -11,6 +11,11 @@ export function Header() {
           <Image src="/logo.jpg" className="rounded-full" width="50" height="50" alt="file drive logo" />
           FileDrive
         </Link>
+        <Button variant={"outline"}>
+          <Link href="/dashboard/files">
+            Your Files
+          </Link>
+        </Button>
         <div className="flex gap-2">
           <OrganizationSwitcher />
           <UserButton />
