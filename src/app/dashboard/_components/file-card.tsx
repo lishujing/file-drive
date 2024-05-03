@@ -7,9 +7,9 @@ import { useQuery } from 'convex/react'
 import Image from 'next/image'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { formatRelative } from 'date-fns'
-import { FileCardActions, getFileUrl } from './file-actions'
+import { FileCardActions } from './file-actions'
 
-export function FileCard({ file }: { file: Doc<'files'> & {isFavorited: boolean }}) {
+export function FileCard({ file }: { file: Doc<'files'> & {isFavorited: boolean; url: string | null }}) {
   const userProfile = useQuery(api.users.getUserProfile, {
     userId: file.userId
   })
@@ -33,7 +33,7 @@ export function FileCard({ file }: { file: Doc<'files'> & {isFavorited: boolean 
         </div>
       </CardHeader>
       <CardContent className="h-[200px] flex justify-center items-center">
-        {(file.type === 'image' || file.type === 'jpeg') && <Image alt={file.name} width="200" height="200" src={getFileUrl(file.fileId)} />}
+        {(file.type === 'image' || file.type === 'jpeg') && file.url && (<Image alt={file.name} width="200" height="200" src={file.url} />)}
         {file.type === 'csv' && <GanttChartIcon className="w-20 h-20" />}
         {file.type === 'pdf' && <FileTextIcon className="w-20 h-20" />}
       </CardContent>

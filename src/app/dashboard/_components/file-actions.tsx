@@ -23,12 +23,12 @@ import { useMutation, useQuery } from 'convex/react'
 import { useToast } from '@/components/ui/use-toast'
 import { Protect } from "@clerk/nextjs";
 
-export function FileCardActions({ file, isFavorite }: { file: Doc<'files'>; isFavorite: boolean }) {
+export function FileCardActions({ file, isFavorite }: { file: Doc<'files'> & { url: string | null}; isFavorite: boolean }) {
   const { toast } = useToast()
   const deleteFile = useMutation(api.files.deleteFile)
   const restoreFile = useMutation(api.files.restoreFile)
   const toggleFavorite = useMutation(api.files.toggleFavorite)
-  const me = useQuery(api.files.getMe)
+  const me = useQuery(api.users.getMe)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   return (
     <>
@@ -90,7 +90,8 @@ export function FileCardActions({ file, isFavorite }: { file: Doc<'files'>; isFa
             className="flex gap-1 items-center cursor-pointer"
             onClick={() => {
               // open a new tab to the file location on convex
-              window.open(getFileUrl(file.fileId), "_blank");
+              if(!file.url) return;
+              window.open(file.url, "_blank");
             }}
           >
             <FileIcon className="w-4 h-4" /> Download
@@ -135,6 +136,3 @@ export function FileCardActions({ file, isFavorite }: { file: Doc<'files'>; isFa
   )
 }
 
-export function getFileUrl(fileId: Id<"_storage">): string {
-  return `${process.env.NEXT_PUBLIC_CONVEX_URL}/api/storage/${fileId}`
-}
